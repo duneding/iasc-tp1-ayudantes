@@ -8,7 +8,8 @@ var express = require('express'),
     querystring = require('querystring'),
     bodyParser = require('body-parser'),
     methodOverride = require("method-override"),
-    _ = require('underscore');
+    _ = require('underscore'),
+    request = require('request');
 
 app.use(bodyParser.urlencoded({ extended: false }));  
 app.use(bodyParser.json());  
@@ -35,23 +36,41 @@ app.post('/preguntas', function (req, res) {
     if (!alumnoExistente) {
         alumnos.push(req.body.port);
     }
+
+    for(var i = 0, size = docentes.length; i < size ; i++){
+        var id = docentes[i];
+        broadcast({
+            pregunta: idPregunta
+        }, id); 
+    }
     res.status(201).json(req.body);
 });
 
-app.post('/subscribe', function (req, res) {
-    console.log("SERVER: SUSCRIPCION RECIBIDA: " + req.body.id);
-    var existente = false;
+function broadcast(pregunta, id) {
+    console.log('http://localhost:' + id + '/broadcast');
+    request.post({
+        json: true,
+        body:  pregunta,
+        url: 'http://localhost:' + id + '/broadcast'
+    })
+}
 
+app.post('/subscribe', function (req, res) {
+    var existente = false;
+    var tipo = '';
     if (req.body.alumno){
         existente = _.findWhere(alumnos, req.body.id);
         if (!existente)
             alumnos.push(req.body.id);
+        tipo = 'ALUMNO';
     }else{
         existente = _.findWhere(docentes, req.body.id);
         if (!existente)
             docentes.push(req.body.id);
+        tipo = 'DOCENTE';
     }
-
+    
+    console.log("SERVER: SUSCRIPCION " + tipo + " RECIBIDA: " + req.body.id);
     res.status(201).json(req.body);
 });
 
