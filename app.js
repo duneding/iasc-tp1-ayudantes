@@ -37,3 +37,33 @@ app.post('/preguntas', function (req, res) {
     }
     res.status(201).json(req.body);
 });
+
+app.post('/subscribe', function (req, res) {
+    console.log("SERVER: SUSCRIPCION RECIBIDA: " + req.body.id);
+    var existente = false;
+
+    if (req.body.alumno){
+        existente = _.findWhere(alumnos, req.body.id);
+        if (!existente)
+            alumnos.push(req.body.id);
+    }else{
+        existente = _.findWhere(docentes, req.body.id);
+        if (!existente)
+            docentes.push(req.body.id);
+    }
+
+    res.status(201).json(req.body);
+});
+
+app.get('/subscriptores', function (req, res) {
+    var todos = {
+        alumnos: alumnos,
+        docentes: docentes
+    };
+
+    if (todos) {
+        res.status(200).json(todos);
+    } else {
+        res.sendStatus(400);
+    }
+});
