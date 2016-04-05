@@ -38,12 +38,6 @@ app.post('/preguntar', function (req, res) {
         respuesta: ""
     };
 
-    preguntas.push(pregunta);
-    var alumnoExistente = _.findWhere(alumnos, req.body.alumno);
-    if (!alumnoExistente) {
-        alumnos.push(req.body.alumno);
-    }
-
     var mensaje = {
                     pregunta: idPregunta + " / " + req.body.pregunta,
                     alumno: req.body.alumno
@@ -52,6 +46,7 @@ app.post('/preguntar', function (req, res) {
     alumnosFiltrados = _.filter(alumnos, function(a){ return a!= req.body.alumno; });
     enviar(mensaje, docentes, broadcast);
     enviar(mensaje, alumnosFiltrados, broadcast);
+
     res.status(201).json(req.body);
 });
 
@@ -70,13 +65,21 @@ app.post('/subscribe', function (req, res) {
 });
 
 app.post('/responder', function (req, res) {
+    console.log('dsvinovinovino')
     console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.id + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.docente);
     preguntas[req.body.id].respuesta = req.body.respuesta;
 	
-    /*var docenteExistente = _.findWhere(docentes, req.body.docente);
-    if (!docenteExistente) {
-        docentes.push(req.body.docente);
-    }*/
+    var mensaje = {
+                    pregunta: req.body.id + " / " + req.body.pregunta,
+                    respuesta: req.body.respuesta,
+                    alumno: req.body.alumno,
+                    docente: req.body.docente
+                };
+    
+    docentesFiltrados = _.filter(docentes, function(a){ return a!= req.body.alumno; });
+    enviar(mensaje, docentesFiltrados, broadcast);
+    enviar(mensaje, alumnos, broadcast);
+
     res.status(201).json(req.body);
 });
 

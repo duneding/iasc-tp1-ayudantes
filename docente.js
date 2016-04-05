@@ -41,20 +41,21 @@ app.post('/broadcast', function (req, res) {
 });
 
 function responder(){
-
     request(foroUrl+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {respuesta: ""});
 
-            if (pregunta!=null)
+            if (!_.isUndefined(pregunta)){   
                 request.post({
                         json: true,
                         body: { 
                                 id: pregunta["id"], 
                                 respuesta: "everythings gonna be alright", 
-                                docente: server.address().port},
+                                docente: server.address().port
+                            },
                         url: foroUrl + 'responder'
-                });
+                });  
+            }          
           }
         })
 }
