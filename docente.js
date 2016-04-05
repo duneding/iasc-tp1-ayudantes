@@ -25,6 +25,16 @@ app.post('/', function (req, res) {
     res.sendStatus(200);
 });
 
+subscribe({
+    id: server.address().port,
+    alumno: false
+});
+
+app.post('/broadcast', function (req, res) {
+    console.log("DOCENTE: Publicaron pregunta: " + JSON.stringify(req.body));
+    res.sendStatus(200);
+});
+
 function responder(idPregunta, respuesta) {
     request.post({
         json: true,
@@ -32,17 +42,6 @@ function responder(idPregunta, respuesta) {
         url: foroUrl + 'respuestas'
     });
 }
-
-subscribe({
-    id: server.address().port,
-    alumno: false
-});
-
-
-app.post('/broadcast', function (req, res) {
-    console.log("DOCENTE: Publicaron pregunta: " + JSON.stringify(req.body));
-    res.sendStatus(200);
-});
 
 function subscribe(alumno) {
     request.post({

@@ -47,19 +47,6 @@ app.post('/preguntas', function (req, res) {
     res.status(201).json(req.body);
 });
 
-function enviar(mensaje, target, tipo){
-    tipo(mensaje, target);
-}
-
-function broadcast(mensaje, lista){
-    for(var i = 0, size = lista.length; i < size ; i++)            
-        request.post({
-            json: true,
-            body:  mensaje,
-            url: 'http://localhost:' + lista[i] + '/broadcast'
-        });    
-}
-
 app.post('/subscribe', function (req, res) {    
     var tipo = '';
     if (req.body.alumno){        
@@ -85,6 +72,7 @@ app.post('/respuestas', function (req, res) {
     }
     res.status(201).json(req.body);
 });
+
 app.get('/subscriptores', function (req, res) {
     var todos = {
         alumnos: alumnos,
@@ -97,4 +85,17 @@ app.get('/subscriptores', function (req, res) {
         res.sendStatus(400);
     }
 });
+
+function enviar(mensaje, target, tipo){
+    tipo(mensaje, target);
+}
+
+function broadcast(mensaje, lista){
+    for(var i = 0, size = lista.length; i < size ; i++)            
+        request.post({
+            json: true,
+            body:  mensaje,
+            url: 'http://localhost:' + lista[i] + '/broadcast'
+        });    
+}
 

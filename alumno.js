@@ -38,6 +38,11 @@ app.post('/', function (req, res) {
     res.sendStatus(200);
 });
 
+app.post('/broadcast', function (req, res) {
+    console.log("ALUMNO: Publicaron pregunta: " + JSON.stringify(req.body));
+    res.sendStatus(200);
+});
+
 function subscribe(alumno) {
     request.post({
         json: true,
@@ -53,9 +58,3 @@ function preguntar(pregunta) {
         url: foroUrl + 'preguntas'
     });
 }
-
-app.post('/broadcast', function (req, res) {
-    console.log("ALUMNO: Publicaron pregunta: " + JSON.stringify(req.body));
-    res.sendStatus(200);
-});
-
