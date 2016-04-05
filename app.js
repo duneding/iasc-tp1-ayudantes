@@ -31,7 +31,7 @@ var idPregunta = 0;
 app.post('/preguntas', function (req, res) {
     console.log("SERVER: PREGUNTA RECIBIDA: " + idPregunta + " - ALUMNO: " + req.body.port);
     req.body.id = idPregunta++;
-    preguntas.push({pregunta: req.body);
+    preguntas.push({pregunta: req.body});
     var alumnoExistente = _.findWhere(alumnos, req.body.port);
     if (!alumnoExistente) {
         alumnos.push(req.body.port);
@@ -52,7 +52,7 @@ function broadcast(pregunta, id) {
         json: true,
         body:  pregunta,
         url: 'http://localhost:' + id + '/broadcast'
-    })
+    });
 }
 
 app.post('/subscribe', function (req, res) {

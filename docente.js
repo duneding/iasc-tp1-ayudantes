@@ -50,6 +50,6 @@ function subscribe(alumno) {
         json: true,
         body: alumno,
         url: foroUrl + 'subscribe'
-    })
+    });
 }
 
