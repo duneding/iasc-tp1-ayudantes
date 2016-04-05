@@ -37,36 +37,36 @@ app.post('/preguntas', function (req, res) {
         alumnos.push(req.body.port);
     }
 
-    for(var i = 0, size = docentes.length; i < size ; i++){
-        var id = docentes[i];
-        broadcast({
-            pregunta: idPregunta
-        }, id); 
-    }
+    var mensaje = {
+                    pregunta: idPregunta,
+                    alumno: req.body.port
+                };
+    
+    enviar(mensaje, docentes, broadcast);
+    enviar(mensaje, alumnos, broadcast);
     res.status(201).json(req.body);
 });
 
-function broadcast(pregunta, id) {
-    console.log('http://localhost:' + id + '/broadcast');
-    request.post({
-        json: true,
-        body:  pregunta,
-        url: 'http://localhost:' + id + '/broadcast'
-    });
+function enviar(mensaje, target, tipo){
+    tipo(mensaje, target);
 }
 
-app.post('/subscribe', function (req, res) {
-    var existente = false;
+function broadcast(mensaje, lista){
+    for(var i = 0, size = lista.length; i < size ; i++)            
+        request.post({
+            json: true,
+            body:  mensaje,
+            url: 'http://localhost:' + lista[i] + '/broadcast'
+        });    
+}
+
+app.post('/subscribe', function (req, res) {    
     var tipo = '';
-    if (req.body.alumno){
-        existente = _.findWhere(alumnos, req.body.id);
-        if (!existente)
-            alumnos.push(req.body.id);
+    if (req.body.alumno){        
+        alumnos.push(req.body.id);
         tipo = 'ALUMNO';
     }else{
-        existente = _.findWhere(docentes, req.body.id);
-        if (!existente)
-            docentes.push(req.body.id);
+        docentes.push(req.body.id);
         tipo = 'DOCENTE';
     }
     

@@ -19,13 +19,12 @@ subscribe({
     alumno: true
 });
 
-
 setInterval(function () {
     preguntar({
         port: server.address().port,
         pregunta: 'whats going on?'
     });
-}, 1000);
+}, 5000);
 
 app.get('/', function (req, res) {
 	request.get({
@@ -54,4 +53,9 @@ function preguntar(pregunta) {
         url: foroUrl + 'preguntas'
     });
 }
+
+app.post('/broadcast', function (req, res) {
+    console.log("ALUMNO: Publicaron pregunta: " + JSON.stringify(req.body));
+    res.sendStatus(200);
+});
 

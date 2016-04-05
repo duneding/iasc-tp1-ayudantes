@@ -25,7 +25,6 @@ app.post('/', function (req, res) {
     res.sendStatus(200);
 });
 
-
 function responder(idPregunta, respuesta) {
     request.post({
         json: true,
