@@ -13,10 +13,12 @@ var server = app.listen(process.argv[2], function () {
   console.log('Alumno listening at http://%s:%s', host, port);
 });
 
+
 subscribe({
     id: server.address().port,
     alumno: true
 });
+
 
 setInterval(function () {
     preguntar({
@@ -24,6 +26,13 @@ setInterval(function () {
         pregunta: 'whats going on?'
     });
 }, 1000);
+
+app.get('/', function (req, res) {
+	request.get({
+		json: true,
+		url: foroUrl + 'preguntas'
+    }).pipe(res);
+});
 
 app.post('/', function (req, res) {
     console.log("ALUMNO: RECIBI " + JSON.stringify(req.body));

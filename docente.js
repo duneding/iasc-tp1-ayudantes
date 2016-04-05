@@ -13,6 +13,27 @@ var server = app.listen(process.argv[2], function () {
   console.log('Alumno listening at http://%s:%s', host, port);
 });
 
+app.get('/', function (req, res) {
+	request.get({
+		json: true,
+		url: foroUrl + 'respuestas'
+    }).pipe(res);
+});
+
+app.post('/', function (req, res) {
+    console.log("DOCENTE: RECIBI " + JSON.stringify(req.body));
+    res.sendStatus(200);
+});
+
+
+function responder(idPregunta, respuesta) {
+    request.post({
+        json: true,
+        body: {idPregunta: idPregunta, respuesta: respuesta},
+        url: foroUrl + 'respuestas'
+    });
+}
+
 subscribe({
     id: server.address().port,
     alumno: false
@@ -27,7 +48,8 @@ app.post('/broadcast', function (req, res) {
 function subscribe(alumno) {
     request.post({
         json: true,
-        body:  alumno,
+        body: alumno,
         url: foroUrl + 'subscribe'
     })
 }
+

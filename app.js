@@ -31,7 +31,7 @@ var idPregunta = 0;
 app.post('/preguntas', function (req, res) {
     console.log("SERVER: PREGUNTA RECIBIDA: " + idPregunta + " - ALUMNO: " + req.body.port);
     req.body.id = idPregunta++;
-    preguntas.push(req.body);
+    preguntas.push({pregunta: req.body);
     var alumnoExistente = _.findWhere(alumnos, req.body.port);
     if (!alumnoExistente) {
         alumnos.push(req.body.port);
@@ -74,6 +74,17 @@ app.post('/subscribe', function (req, res) {
     res.status(201).json(req.body);
 });
 
+
+app.post('/respuestas', function (req, res) {
+    console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.pregunta + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.port);
+    preguntas[req.body.pregunta].respuesta = req.body.respuesta;
+	
+    var docenteExistente = _.findWhere(docentes, req.body.port);
+    if (!docenteExistente) {
+        docentes.push(req.body.port);
+    }
+    res.status(201).json(req.body);
+});
 app.get('/subscriptores', function (req, res) {
     var todos = {
         alumnos: alumnos,
@@ -86,3 +97,4 @@ app.get('/subscriptores', function (req, res) {
         res.sendStatus(400);
     }
 });
+
