@@ -25,26 +25,33 @@ var server = app.listen(3000, function () {
 var preguntas = [];
 var alumnos = [];
 var docentes = [];
-var docentesPendientes = [];
 var idPregunta = 0;
 
-app.post('/preguntas', function (req, res) {
-    console.log("SERVER: PREGUNTA RECIBIDA: " + idPregunta + " - ALUMNO: " + req.body.port);
+app.post('/preguntar', function (req, res) {
+    console.log("SERVER: PREGUNTA RECIBIDA: " + idPregunta + " / " + req.body.pregunta + " - ALUMNO: " + req.body.alumno);
     req.body.id = idPregunta++;
-    preguntas.push({pregunta: req.body});
-    var alumnoExistente = _.findWhere(alumnos, req.body.port);
+    
+    var pregunta = {
+        id: req.body.id,
+        alumno: req.body.alumno,
+        pregunta: req.body.pregunta,
+        respuesta: ""
+    };
+
+    preguntas.push(pregunta);
+    var alumnoExistente = _.findWhere(alumnos, req.body.alumno);
     if (!alumnoExistente) {
-        alumnos.push(req.body.port);
+        alumnos.push(req.body.alumno);
     }
 
     var mensaje = {
-                    pregunta: idPregunta,
-                    alumno: req.body.port
+                    pregunta: idPregunta + " / " + req.body.pregunta,
+                    alumno: req.body.alumno
                 };
     
-    alus = _.filter(alumnos, function(a){ return a!= req.body.port; });
+    alumnosFiltrados = _.filter(alumnos, function(a){ return a!= req.body.alumno; });
     enviar(mensaje, docentes, broadcast);
-    enviar(mensaje, alus, broadcast);
+    enviar(mensaje, alumnosFiltrados, broadcast);
     res.status(201).json(req.body);
 });
 
@@ -62,15 +69,14 @@ app.post('/subscribe', function (req, res) {
     res.status(201).json(req.body);
 });
 
-
-app.post('/respuestas', function (req, res) {
-    console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.pregunta + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.port);
-    preguntas[req.body.pregunta].respuesta = req.body.respuesta;
+app.post('/responder', function (req, res) {
+    console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.id + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.docente);
+    preguntas[req.body.id].respuesta = req.body.respuesta;
 	
-    var docenteExistente = _.findWhere(docentes, req.body.port);
+    /*var docenteExistente = _.findWhere(docentes, req.body.docente);
     if (!docenteExistente) {
-        docentes.push(req.body.port);
-    }
+        docentes.push(req.body.docente);
+    }*/
     res.status(201).json(req.body);
 });
 
@@ -82,6 +88,14 @@ app.get('/subscriptores', function (req, res) {
 
     if (todos) {
         res.status(200).json(todos);
+    } else {
+        res.sendStatus(400);
+    }
+});
+
+app.get('/preguntas', function (req, res) {
+    if (preguntas) {
+        res.status(200).json(preguntas);
     } else {
         res.sendStatus(400);
     }

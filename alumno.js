@@ -1,5 +1,6 @@
 var express = require('express'),
     request = require('request'),
+    _ = require('underscore'),
     app = express();
 
 var foroUrl = 'http://localhost:3000/';
@@ -20,7 +21,7 @@ subscribe({
 
 setInterval(function () {
     preguntar({
-        port: server.address().port,
+        alumno: server.address().port,
         pregunta: 'whats going on?'
     });
 }, 5000);
@@ -54,6 +55,6 @@ function preguntar(pregunta) {
     request.post({
         json: true,
         body: pregunta,
-        url: foroUrl + 'preguntas'
+        url: foroUrl + 'preguntar'
     });
 }
