@@ -65,7 +65,7 @@ app.post('/subscribe', function (req, res) {
 });
 
 app.post('/responder', function (req, res) {
-    console.log('dsvinovinovino')
+    console.log('dsvinovinovino');
     console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.id + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.docente);
     preguntas[req.body.id].respuesta = req.body.respuesta;
 	

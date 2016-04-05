@@ -49,7 +49,7 @@ function responder(){
                 request.post({
                         json: true,
                         body: { 
-                                id: pregunta["id"], 
+                                id: pregunta.id, 
                                 respuesta: "everythings gonna be alright", 
                                 docente: server.address().port
                             },
@@ -57,7 +57,7 @@ function responder(){
                 });  
             }          
           }
-        })
+        });
 }
 
 function subscribe(alumno) {
