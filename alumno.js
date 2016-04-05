@@ -13,7 +13,6 @@ var server = app.listen(process.argv[2], function () {
   console.log('Alumno listening at http://%s:%s', host, port);
 });
 
-
 subscribe({
     id: server.address().port,
     alumno: true

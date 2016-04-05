@@ -42,8 +42,9 @@ app.post('/preguntas', function (req, res) {
                     alumno: req.body.port
                 };
     
+    alus = _.filter(alumnos, function(a){ return a!= req.body.port; });
     enviar(mensaje, docentes, broadcast);
-    enviar(mensaje, alumnos, broadcast);
+    enviar(mensaje, alus, broadcast);
     res.status(201).json(req.body);
 });
 
