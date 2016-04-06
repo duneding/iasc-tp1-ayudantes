@@ -37,9 +37,11 @@ app.post('/preguntar', function (req, res) {
         pregunta: req.body.pregunta,
         respuesta: ""
     };
+    
+    preguntas.push(pregunta);
 
     var mensaje = {
-                    pregunta: idPregunta + " / " + req.body.pregunta,
+                    pregunta: req.body.id + " / " + req.body.pregunta,
                     alumno: req.body.alumno
                 };
     
@@ -65,18 +67,17 @@ app.post('/subscribe', function (req, res) {
 });
 
 app.post('/responder', function (req, res) {
-    console.log('dsvinovinovino');
     console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.id + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.docente);
     preguntas[req.body.id].respuesta = req.body.respuesta;
 	
     var mensaje = {
-                    pregunta: req.body.id + " / " + req.body.pregunta,
+                    pregunta: req.body.id,
                     respuesta: req.body.respuesta,
                     alumno: req.body.alumno,
                     docente: req.body.docente
                 };
     
-    docentesFiltrados = _.filter(docentes, function(a){ return a!= req.body.alumno; });
+    docentesFiltrados = _.filter(docentes, function(a){ return a!= req.body.docente; });
     enviar(mensaje, docentesFiltrados, broadcast);
     enviar(mensaje, alumnos, broadcast);
 

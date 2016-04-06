@@ -17,14 +17,7 @@ var server = app.listen(process.argv[2], function () {
 subscribe({
     id: server.address().port,
     alumno: true
-});
-
-setInterval(function () {
-    preguntar({
-        alumno: server.address().port,
-        pregunta: 'whats going on?'
-    });
-}, 5000);
+}, startAsking);
 
 app.get('/', function (req, res) {
 	request.get({
@@ -57,4 +50,23 @@ function preguntar(pregunta) {
         body: pregunta,
         url: foroUrl + 'preguntar'
     });
+}
+
+function startAsking() {
+    setInterval(function () {
+        preguntar({
+            alumno: server.address().port,
+            pregunta: 'whats going on?'
+        });
+    }, 5000);
+    
+}
+
+function subscribe(alumno, cont) {
+    request.post({
+        json: true,
+        body:  alumno,
+        url: foroUrl + 'subscribe'
+    });
+    cont();
 }

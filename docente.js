@@ -17,11 +17,7 @@ var server = app.listen(process.argv[2], function () {
 subscribe({
     id: server.address().port,
     alumno: false
-});
-
-setInterval(function () {
-    responder();
-}, 5000);
+}, startReplying);
 
 app.get('/', function (req, res) {
 	request.get({
@@ -45,7 +41,7 @@ function responder(){
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {respuesta: ""});
 
-            if (!_.isUndefined(pregunta)){   
+            if (!_.isUndefined(pregunta)){
                 request.post({
                         json: true,
                         body: { 
@@ -68,3 +64,17 @@ function subscribe(alumno) {
     });
 }
 
+function startReplying() {
+    setInterval(function () {
+        responder();
+    }, 5000);
+}
+
+function subscribe(alumno, cont) {
+    request.post({
+        json: true,
+        body: alumno,
+        url: foroUrl + 'subscribe'
+    });
+    cont();
+}
