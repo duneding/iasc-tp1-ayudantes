@@ -26,13 +26,8 @@ app.get('/', function (req, res) {
     }).pipe(res);
 });
 
-app.post('/', function (req, res) {
-    console.log("ALUMNO: RECIBI " + JSON.stringify(req.body));
-    res.sendStatus(200);
-});
-
 app.post('/broadcast', function (req, res) {
-    console.log("ALUMNO: Publicaron pregunta: " + JSON.stringify(req.body));
+    console.log("<ALUMNO> " + req.body.mensaje);
     res.sendStatus(200);
 });
 

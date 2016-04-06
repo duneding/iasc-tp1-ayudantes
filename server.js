@@ -28,26 +28,27 @@ var docentes = [];
 var idPregunta = 0;
 
 app.post('/preguntar', function (req, res) {
-    console.log("SERVER: PREGUNTA RECIBIDA: " + idPregunta + " / " + req.body.pregunta + " - ALUMNO: " + req.body.alumno);
+    console.log("<SERVER> PREGUNTA RECIBIDA: " + idPregunta + " / " + req.body.pregunta + " - ALUMNO: " + req.body.alumno);
     req.body.id = idPregunta++;
     
     var pregunta = {
         id: req.body.id,
         alumno: req.body.alumno,
         pregunta: req.body.pregunta,
-        respuesta: ""
+        respuesta: "",
+        pending: true
     };
     
     preguntas.push(pregunta);
 
     var mensaje = {
+                    mensaje: "El alumno " + req.body.alumno + " publico la pregunta " + req.body.pregunta,
                     pregunta: req.body.id + " / " + req.body.pregunta,
                     alumno: req.body.alumno
                 };
     
-    alumnosFiltrados = _.filter(alumnos, function(a){ return a!= req.body.alumno; });
-    enviar(mensaje, docentes, broadcast);
-    enviar(mensaje, alumnosFiltrados, broadcast);
+    filtrados = _.filter(todos(), function(a){ return a!= req.body.alumno; });
+    enviar(mensaje, filtrados, broadcast);
 
     res.status(201).json(req.body);
 });
@@ -62,33 +63,38 @@ app.post('/subscribe', function (req, res) {
         tipo = 'DOCENTE';
     }
     
-    console.log("SERVER: SUSCRIPCION " + tipo + " RECIBIDA: " + req.body.id);
+    console.log("<SERVER> SUSCRIPCION " + tipo + " RECIBIDA: " + req.body.id);
     res.status(201).json(req.body);
 });
 
 app.post('/responder', function (req, res) {
-    console.log("SERVER: RESPUESTA A PREGUNTA: " + req.body.id + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.docente);
+    console.log("<SERVER> RESPUESTA A PREGUNTA: " + req.body.id + " RECIBIDA: " + req.body.respuesta + " - DOCENTE: " + req.body.docente);
     preguntas[req.body.id].respuesta = req.body.respuesta;
-	
+	preguntas[req.body.id].pending = false;
+
     var mensaje = {
+                    mensaje: "La pregunta " + req.body.id + " fue respondida por docente " + req.body.docente + ": " + req.body.respuesta,
                     pregunta: req.body.id,
                     respuesta: req.body.respuesta,
                     alumno: req.body.alumno,
                     docente: req.body.docente
                 };
     
-    docentesFiltrados = _.filter(docentes, function(a){ return a!= req.body.docente; });
-    enviar(mensaje, docentesFiltrados, broadcast);
-    enviar(mensaje, alumnos, broadcast);
+    filtrados = _.filter(todos(), function(a){ return a!= req.body.docente; });
+    enviar(mensaje, filtrados, broadcast);    
 
     res.status(201).json(req.body);
 });
 
+app.post('/broadcast', function (req, res) {
+    console.log("<SERVER> BROADCAST: " + req.body.mensaje);
+    filtrados = _.filter(todos(), function(a){ return a!= req.body.id });
+    enviar(req.body, filtrados, broadcast);
+    res.status(201).json(req.body);
+});
+
 app.get('/subscriptores', function (req, res) {
-    var todos = {
-        alumnos: alumnos,
-        docentes: docentes
-    };
+    var todos = todos();
 
     if (todos) {
         res.status(200).json(todos);
@@ -105,6 +111,10 @@ app.get('/preguntas', function (req, res) {
     }
 });
 
+function todos(){
+    return docentes.concat(alumnos);
+}
+
 function enviar(mensaje, target, tipo){
     tipo(mensaje, target);
 }
@@ -113,7 +123,7 @@ function broadcast(mensaje, lista){
     for(var i = 0, size = lista.length; i < size ; i++)            
         request.post({
             json: true,
-            body:  mensaje,
+            body: mensaje,
             url: 'http://localhost:' + lista[i] + '/broadcast'
         });    
 }

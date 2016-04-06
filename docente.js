@@ -3,7 +3,7 @@ var express = require('express'),
     _ = require('underscore'),
     app = express();
 
-var foroUrl = 'http://localhost:3000/';
+var serverURL = 'http://localhost:3000/';
 
 app.use(require('body-parser').json());
 
@@ -22,35 +22,45 @@ subscribe({
 app.get('/', function (req, res) {
 	request.get({
 		json: true,
-		url: foroUrl + 'respuestas'
+		url: serverURL + 'respuestas'
     }).pipe(res);
 });
 
-app.post('/', function (req, res) {
-    console.log("DOCENTE: RECIBI " + JSON.stringify(req.body));
+app.post('/broadcast', function (req, res) {
+    console.log("<DOCENTE> " + req.body.mensaje);
     res.sendStatus(200);
 });
 
-app.post('/broadcast', function (req, res) {
-    console.log("DOCENTE: Publicaron pregunta: " + JSON.stringify(req.body));
-    res.sendStatus(200);
-});
+function broadcast(mensaje){
+    request.post({
+        json: true,
+        body: mensaje,
+        url: serverURL + 'broadcast'
+    })
+}
 
 function responder(){
-    request(foroUrl+'preguntas', function (error, response, body) {
+    request(serverURL+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
-            var pregunta = _.findWhere(JSON.parse(body), {respuesta: ""});
+            var pregunta = _.findWhere(JSON.parse(body), {pending: true});
 
             if (!_.isUndefined(pregunta)){
-                request.post({
+                
+                broadcast({
+                        mensaje:"Docente " + server.address().port + " esta escribiendo respuesta a pregunta " + pregunta.id,
+                        id: server.address().port});
+
+                setTimeout(function(){
+                    request.post({
                         json: true,
                         body: { 
                                 id: pregunta.id, 
                                 respuesta: "everythings gonna be alright", 
                                 docente: server.address().port
                             },
-                        url: foroUrl + 'responder'
-                });  
+                        url: serverURL + 'responder'
+                    });
+                }, 6000);  
             }          
           }
         });
@@ -60,7 +70,7 @@ function subscribe(alumno) {
     request.post({
         json: true,
         body: alumno,
-        url: foroUrl + 'subscribe'
+        url: serverURL + 'subscribe'
     });
 }
 
@@ -74,7 +84,7 @@ function subscribe(alumno, cont) {
     request.post({
         json: true,
         body: alumno,
-        url: foroUrl + 'subscribe'
+        url: serverURL + 'subscribe'
     });
     cont();
 }
