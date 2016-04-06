@@ -58,7 +58,7 @@ function startAsking() {
             alumno: server.address().port,
             pregunta: 'whats going on?'
         });
-    }, 5000);
+    }, 2000);
     
 }
 
