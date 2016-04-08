@@ -9,13 +9,13 @@ app.use(require('body-parser').json());
 
 var server = app.listen(process.argv[2], function () {
   var host = server.address().address;
-  var port = server.address().port;
+  var port = port();
 
   console.log('Docente listening at http://%s:%s', host, port);
 });
 
 subscribe({
-    id: server.address().port,
+    id: port(),
     alumno: false
 }, startReplying);
 
@@ -59,15 +59,12 @@ function responder(){
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {pending: true});
             if (!_.isUndefined(pregunta)){    
-
-                var inProcess = getInProcess(pregunta.id);                  
-                if (!inProcess){
-
-                    //TODO: setProcess, broadcast pueden correr en paralelo
+     
+                if (!getInProcess(pregunta.id)){
                     setInProcess(pregunta.id);
                     broadcast({
-                        mensaje:"Docente " + server.address().port + " esta escribiendo respuesta a pregunta " + pregunta.id,
-                        id: server.address().port});
+                        mensaje: escribiendo(pregunta.id),
+                        id: port()});
             
                     setTimeout(function(){
                         request.post({
@@ -75,7 +72,7 @@ function responder(){
                             body: { 
                                     id: pregunta.id, 
                                     respuesta: "everythings gonna be alright", 
-                                    docente: server.address().port
+                                    docente: port()
                                 },
                             url: serverURL + 'responder'
                         });
@@ -84,6 +81,14 @@ function responder(){
             }          
           }
         });
+}
+
+function escribiendo(id){
+    return "Docente " + port() + " esta escribiendo respuesta a pregunta " + id;
+}
+
+function port(){
+    return server.address().port;
 }
 
 function subscribe(alumno) {
