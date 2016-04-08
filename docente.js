@@ -39,28 +39,48 @@ function broadcast(mensaje){
     })
 }
 
+function setInProcess(id){
+    request.post({
+        url: serverURL + 'process/' + id
+    })
+}
+
+function getInProcess(id){
+    request(serverURL + 'process/' + id, function (error, response, body) {
+      if (!error && response.statusCode == 200)
+        return true;
+      else
+        return false;
+    });
+}
+
 function responder(){
     request(serverURL+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {pending: true});
+            if (!_.isUndefined(pregunta)){    
 
-            if (!_.isUndefined(pregunta)){
-                
-                broadcast({
+                var inProcess = getInProcess(pregunta.id);                  
+                if (!inProcess){
+
+                    //TODO: setProcess, broadcast pueden correr en paralelo
+                    setInProcess(pregunta.id);
+                    broadcast({
                         mensaje:"Docente " + server.address().port + " esta escribiendo respuesta a pregunta " + pregunta.id,
                         id: server.address().port});
-
-                setTimeout(function(){
-                    request.post({
-                        json: true,
-                        body: { 
-                                id: pregunta.id, 
-                                respuesta: "everythings gonna be alright", 
-                                docente: server.address().port
-                            },
-                        url: serverURL + 'responder'
-                    });
-                }, 6000);  
+            
+                    setTimeout(function(){
+                        request.post({
+                            json: true,
+                            body: { 
+                                    id: pregunta.id, 
+                                    respuesta: "everythings gonna be alright", 
+                                    docente: server.address().port
+                                },
+                            url: serverURL + 'responder'
+                        });
+                    }, 6000);
+                }  
             }          
           }
         });

@@ -25,6 +25,7 @@ var server = app.listen(3000, function () {
 var preguntas = [];
 var alumnos = [];
 var docentes = [];
+var preguntasInProcess = [];
 var idPregunta = 0;
 
 app.post('/preguntar', function (req, res) {
@@ -42,7 +43,7 @@ app.post('/preguntar', function (req, res) {
     preguntas.push(pregunta);
 
     var mensaje = {
-                    mensaje: "El alumno " + req.body.alumno + " publico la pregunta " + req.body.pregunta,
+                    mensaje: "El alumno " + req.body.alumno + " publico la pregunta " + req.body.pregunta + " (" + req.body.id + ")",
                     pregunta: req.body.id + " / " + req.body.pregunta,
                     alumno: req.body.alumno
                 };
@@ -93,7 +94,22 @@ app.post('/broadcast', function (req, res) {
     res.status(201).json(req.body);
 });
 
-app.get('/subscriptores', function (req, res) {
+app.post('/process/:id', function (req, res) {
+    console.log("<SERVER> Pregunta en proceso: " + req.params.id);
+    preguntasInProcess.push(req.params.id);
+    res.status(200);
+});
+
+app.get('/process/:id', function (req, res) {  
+    var pregunta = _.find(preguntasInProcess, function(id){ return id == req.params.id; });
+    if (!_.isUndefined(pregunta)){
+        console.log("<SERVER> Pregunta seteada en proceso: " + req.params.id);
+        res.status(200);
+    }else
+        res.status(400);
+});
+
+app.get('/participantes', function (req, res) {
     var todos = todos();
 
     if (todos) {
