@@ -89,7 +89,7 @@ app.post('/responder', function (req, res) {
 
 app.post('/broadcast', function (req, res) {
     console.log("<SERVER> BROADCAST: " + req.body.mensaje);
-    filtrados = _.filter(todos(), function(a){ return a!= req.body.id });
+    filtrados = _.filter(todos(), function(a){ return a!= req.body.id; });
     enviar(req.body, filtrados, broadcast);
     res.status(201).json(req.body);
 });
@@ -143,4 +143,3 @@ function broadcast(mensaje, lista){
             url: 'http://localhost:' + lista[i] + '/broadcast'
         });    
 }
-

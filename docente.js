@@ -4,20 +4,19 @@ var express = require('express'),
     app = express();
 
 var serverURL = 'http://localhost:3000/';
-
+	  
 app.use(require('body-parser').json());
 
 var server = app.listen(process.argv[2], function () {
   var host = server.address().address;
-  var port = port();
+  var port = getPort();
 
   console.log('Docente listening at http://%s:%s', host, port);
-});
-
-subscribe({
-    id: port(),
+  subscribe({
+    id: getPort(),
     alumno: false
-}, startReplying);
+  }, startReplying);
+});
 
 app.get('/', function (req, res) {
 	request.get({
@@ -36,13 +35,13 @@ function broadcast(mensaje){
         json: true,
         body: mensaje,
         url: serverURL + 'broadcast'
-    })
+    });
 }
 
 function setInProcess(id){
     request.post({
         url: serverURL + 'process/' + id
-    })
+    });
 }
 
 function getInProcess(id){
@@ -64,7 +63,7 @@ function responder(){
                     setInProcess(pregunta.id);
                     broadcast({
                         mensaje: escribiendo(pregunta.id),
-                        id: port()});
+                        id: getPort()});
             
                     setTimeout(function(){
                         request.post({
@@ -72,7 +71,7 @@ function responder(){
                             body: { 
                                     id: pregunta.id, 
                                     respuesta: "everythings gonna be alright", 
-                                    docente: port()
+                                    docente: getPort()
                                 },
                             url: serverURL + 'responder'
                         });
@@ -84,31 +83,24 @@ function responder(){
 }
 
 function escribiendo(id){
-    return "Docente " + port() + " esta escribiendo respuesta a pregunta " + id;
+    return "Docente " + getPort() + " esta escribiendo respuesta a pregunta " + id;
 }
 
-function port(){
+function getPort(){
     return server.address().port;
 }
 
-function subscribe(alumno) {
-    request.post({
-        json: true,
-        body: alumno,
-        url: serverURL + 'subscribe'
-    });
-}
-
 function startReplying() {
+	console.log('Docente: Start Replying');
     setInterval(function () {
         responder();
     }, 5000);
 }
 
-function subscribe(alumno, cont) {
+function subscribe(docente, cont) {
     request.post({
         json: true,
-        body: alumno,
+        body: docente,
         url: serverURL + 'subscribe'
     });
     cont();
