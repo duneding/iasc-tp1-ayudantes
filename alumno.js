@@ -4,6 +4,7 @@ var express = require('express'),
     app = express();
 
 var foroUrl = 'http://localhost:3000/';
+var TIEMPO_PREGUNTA = 2000;
 
 app.use(require('body-parser').json());
 
@@ -49,7 +50,7 @@ function startAsking() {
             alumno: getPort(),
             pregunta: 'whats going on?'
         });
-    }, 2000);
+    }, TIEMPO_PREGUNTA);
     
 }
 

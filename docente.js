@@ -4,7 +4,8 @@ var express = require('express'),
     app = express();
 
 var serverURL = 'http://localhost:3000/';
-	  
+var TIEMPO_RESPUESTA = 10000;
+
 app.use(require('body-parser').json());
 
 var server = app.listen(process.argv[2], function () {
@@ -30,18 +31,23 @@ app.post('/broadcast', function (req, res) {
     res.sendStatus(200);
 });
 
-function broadcast(mensaje){
+function broadcast(id, action){
     request.post({
         json: true,
-        body: mensaje,
+        body: action(id),
         url: serverURL + 'broadcast'
     });
 }
 
 function setInProcess(id){
-    request.post({
-        url: serverURL + 'process/' + id
-    });
+    request({
+        url:  serverURL + 'process/' + id,
+        method: 'POST'
+    }, function(error, response, body){
+        if(error)
+            console.log(error);
+        broadcast(id, escribiendo);        
+    });    
 }
 
 function getInProcess(id){
@@ -53,37 +59,39 @@ function getInProcess(id){
     });
 }
 
-function responder(){
+function responder (id, setInProcess){
+
+    setInProcess(id);
+    
+    setTimeout(function(){
+        request.post({
+            json: true,
+            body: { 
+                    id: id, 
+                    respuesta: "everythings gonna be alright", 
+                    docente: getPort()
+                },
+            url: serverURL + 'responder'
+        });
+    }, 6000);
+}
+
+function buscarPreguntas(){
     request(serverURL+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {pending: true});
-            if (!_.isUndefined(pregunta)){    
-     
-                if (!getInProcess(pregunta.id)){
-                    setInProcess(pregunta.id);
-                    broadcast({
-                        mensaje: escribiendo(pregunta.id),
-                        id: getPort()});
-            
-                    setTimeout(function(){
-                        request.post({
-                            json: true,
-                            body: { 
-                                    id: pregunta.id, 
-                                    respuesta: "everythings gonna be alright", 
-                                    docente: getPort()
-                                },
-                            url: serverURL + 'responder'
-                        });
-                    }, 6000);
-                }  
-            }          
+            if (!_.isUndefined(pregunta))    
+                if (!getInProcess(pregunta.id))
+                    responder(pregunta.id, setInProcess);                      
           }
         });
 }
 
 function escribiendo(id){
-    return "Docente " + getPort() + " esta escribiendo respuesta a pregunta " + id;
+    return {
+            mensaje: "Docente " + getPort() + " esta escribiendo respuesta a pregunta " + id,
+            id: getPort()
+           };
 }
 
 function getPort(){
@@ -93,8 +101,8 @@ function getPort(){
 function startReplying() {
 	console.log('Docente: Start Replying');
     setInterval(function () {
-        responder();
-    }, 5000);
+        buscarPreguntas(responder);
+    }, TIEMPO_RESPUESTA);
 }
 
 function subscribe(docente, cont) {

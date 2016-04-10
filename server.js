@@ -97,7 +97,7 @@ app.post('/broadcast', function (req, res) {
 app.post('/process/:id', function (req, res) {
     console.log("<SERVER> Pregunta en proceso: " + req.params.id);
     preguntasInProcess.push(req.params.id);
-    res.status(200);
+    res.sendStatus(200);
 });
 
 app.get('/process/:id', function (req, res) {  
