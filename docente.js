@@ -24,7 +24,11 @@ app.get('/', function (req, res) {
 	request.get({
 		json: true,
 		url: serverURL + 'respuestas'
-    }).pipe(res);
+    }, function(error){
+		if (error) {
+			console.log('No se pudo obtener la lista de respuestas - Error: ' + error);
+		}
+	}).pipe(res);
 });
 
 app.post('/broadcast', function (req, res) {
@@ -37,6 +41,10 @@ function broadcast(id, action){
         json: true,
         body: action(id),
         url: serverURL + 'broadcast'
+    }, function(error, response, body){
+        if(error) {
+            console.error('No se pudo enviar un broadcast: ' + error);
+		}
     });
 }
 
@@ -46,34 +54,44 @@ function setInProcess(id){
         method: 'POST'
     }, function(error, response, body){
         if(error)
-            console.log(error);
+            console.error(error);
         broadcast(id, escribiendo);        
     });    
 }
 
 function getInProcess(id){
-    request(serverURL + 'process/' + id, function (error, response, body) {
-      if (!error && response.statusCode == 200)
-        return true;
-      else
-        return false;
-    });
+	request.get(serverURL + 'process/' + id)
+	  .on('error', function (error) {
+	  	console.error('No se pudo consultar si la pregunta: ' + id + ' estaba en proceso de responderse - Error: ' + error);
+	  })
+	  .on('response', function (response) {
+		if (response.statusCode == 200) {
+			console.log('La pregunta: ' + id + ' está en proceso de responderse');
+		} else {
+			responder(id, setInProcess);                      
+		}
+      });
 }
 
 function responder (id, setInProcess){
-
     setInProcess(id);
     
     setTimeout(function(){
         request.post({
             json: true,
-            body: { 
+            body: {
                     id: id, 
                     respuesta: "everythings gonna be alright", 
                     docente: getPort()
                 },
             url: serverURL + 'responder'
-        });
+        }, function(error, response, body){
+			if (error) {
+				console.log('No se pudo postear la respuesta a la pregunta: ' + id + ' - Error: ' + error);
+			} else {
+				console.log('Docente: ' + getPort() + ' respondió la pregunta: ' + id + ' - Info: ' + JSON.stringify(body));
+			}
+		});
     }, TIEMPO_ESCRITURA);
 }
 
@@ -81,11 +99,15 @@ function buscarPreguntas(){
     request(serverURL+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {pending: true});
-            if (!_.isUndefined(pregunta))    
-                if (!getInProcess(pregunta.id))
-                    responder(pregunta.id, setInProcess);                      
-          }
-        });
+            if (!_.isUndefined(pregunta)) {
+                getInProcess(pregunta.id);
+			}
+	  	} else if (error) {
+			console.error('Falló al obtener las preguntas: ' + error);
+	  	} else {
+			console.log('Error al obtener las preguntas, status: ' + response.statusCode);
+		}
+    });
 }
 
 function escribiendo(id){
@@ -111,6 +133,12 @@ function subscribe(docente, cont) {
         json: true,
         body: docente,
         url: serverURL + 'subscribe'
-    });
+    }, function(error, response, body){
+		if (error) {
+			console.log('No se pudo suscribir el docente: ' + docente.id + ' - Error: ' + error);
+		} else {
+			console.log('Docente: ' + docente.id + ' suscripto. Info: ' + JSON.stringify(body));
+		}
+	});
     cont();
 }

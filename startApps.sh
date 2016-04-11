@@ -1,4 +1,5 @@
 #!/bin/sh
+gulp default
 echo "Starting apps..."
 rm log/alumno.log log/docente.log log/server.log
 pm2 start apps.json

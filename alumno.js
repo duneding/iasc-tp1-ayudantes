@@ -24,7 +24,11 @@ app.get('/', function (req, res) {
 	request.get({
 		json: true,
 		url: foroUrl + 'preguntas'
-    }).pipe(res);
+    }, function(error){
+		if (error) {
+			console.log('No se pudo obtener la lista de preguntas - Error: ' + error);
+		} 
+	}).pipe(res);
 });
 
 app.post('/broadcast', function (req, res) {
@@ -37,7 +41,13 @@ function preguntar(pregunta) {
         json: true,
         body: pregunta,
         url: foroUrl + 'preguntar'
-    });
+    }, function(error, response, body){
+		if (error) {
+			console.log('No se pudo realizar la pregunta ' + pregunta.pregunta + ' - Error: ' + error);
+		} else {
+			console.log('Alumno: ' + pregunta.alumno + ' preguntó: ' + pregunta.pregunta + ' - Info: ' + JSON.stringify(body));
+		}
+	});
 }
 
 function getPort(){
@@ -48,7 +58,7 @@ function startAsking() {
     setInterval(function () {
         preguntar({
             alumno: getPort(),
-            pregunta: 'whats going on?'
+            pregunta: 'what\'s going on?'
         });
     }, TIEMPO_PREGUNTA);
     
@@ -59,6 +69,12 @@ function subscribe(alumno, cont) {
         json: true,
         body:  alumno,
         url: foroUrl + 'subscribe'
-    });
+    }, function(error, response, body){
+		if (error) {
+			console.log('No se pudo suscribir el alumno: ' + alumno.id + ' - Error: ' + error);
+		} else {
+			console.log('Alumno: ' + alumno.id + ' suscripto. Info: ' + JSON.stringify(body));
+		}
+	});
     cont();
 }

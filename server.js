@@ -94,7 +94,7 @@ app.post('/broadcast', function (req, res) {
 });
 
 app.post('/process/:id', function (req, res) {
-    console.log("<SERVER> Pregunta en proceso: " + req.params.id);
+    console.log("<SERVER> Pregunta puesta en proceso: " + req.params.id);
     preguntasInProcess.push(req.params.id);
     res.sendStatus(200);
 });
@@ -102,10 +102,12 @@ app.post('/process/:id', function (req, res) {
 app.get('/process/:id', function (req, res) {  
     var pregunta = _.find(preguntasInProcess, function(id){ return id == req.params.id; });
     if (!_.isUndefined(pregunta)){
-        console.log("<SERVER> Pregunta seteada en proceso: " + req.params.id);
-        res.status(200);
-    }else
-        res.status(400);
+        res.sendStatus(200);
+        console.log("<SERVER> Pregunta en proceso: " + req.params.id);
+    } else {
+        res.sendStatus(400);
+		console.log("<SERVER> Pregunta no está en proceso: " + req.params.id);
+	}
 });
 
 app.get('/participantes', function (req, res) {
