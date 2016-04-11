@@ -138,7 +138,7 @@ function subscribe(docente, cont) {
 			console.log('No se pudo suscribir el docente: ' + docente.id + ' - Error: ' + error);
 		} else {
 			console.log('Docente: ' + docente.id + ' suscripto. Info: ' + JSON.stringify(body));
+			cont();
 		}
 	});
-    cont();
 }

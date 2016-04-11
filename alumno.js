@@ -74,7 +74,7 @@ function subscribe(alumno, cont) {
 			console.log('No se pudo suscribir el alumno: ' + alumno.id + ' - Error: ' + error);
 		} else {
 			console.log('Alumno: ' + alumno.id + ' suscripto. Info: ' + JSON.stringify(body));
+			cont();
 		}
 	});
-    cont();
 }
