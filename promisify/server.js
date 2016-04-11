@@ -3,12 +3,13 @@
 //==http://expressjs.com/guide/routing.html===
 //==Para más detalles de la API MIRA ACA===
 //==http://expressjs.com/4x/api.html
-var express = require('express'),
+var express = require('../node_modules/express'),
     app = express(),
-    bodyParser = require('body-parser'),
-    methodOverride = require("method-override"),
-    _ = require('underscore'),
-    request = require('request');
+    bodyParser = require('../node_modules/body-parser'),
+    methodOverride = require("../node_modules/method-override"),
+    _ = require('../node_modules/underscore'),
+    request = require('../node_modules/request'),
+    Q = require('../node_modules/q');
 
 app.use(bodyParser.urlencoded({ extended: false }));  
 app.use(bodyParser.json());  
@@ -111,11 +112,10 @@ app.get('/process/:id', function (req, res) {
 app.get('/participantes', function (req, res) {
     var todos = todos();
 
-    if (todos) {
+    if (todos)
         res.status(200).json(todos);
-    } else {
+    else
         res.sendStatus(400);
-    }
 });
 
 app.get('/preguntas', function (req, res) {
