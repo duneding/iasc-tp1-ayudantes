@@ -1,11 +1,11 @@
-var express = require('express'),
-    request = require('request'),
-    _ = require('underscore'),
-    app = express();
+var express = require('../node_modules/express'),
+    request = require('../node_modules/request'),
+    _ = require('../node_modules/underscore'),
+    app = express(),
+    Q = require('../node_modules/q');
 
 var serverURL = 'http://localhost:3000/';
 var TIEMPO_RESPUESTA = 10000;
-var TIEMPO_ESCRITURA = 6000;
 
 app.use(require('body-parser').json());
 
@@ -13,12 +13,14 @@ var server = app.listen(process.argv[2], function () {
   var host = server.address().address;
   var port = getPort();
 
-  console.log('Docente listening at http://%s:%s', host, port);
-  subscribe({
+    console.log('Docente listening at http://%s:%s', host, port);
+});
+
+subscribe({
     id: getPort(),
     alumno: false
-  }, startReplying);
-});
+  })
+.then(startReplying);
 
 app.get('/', function (req, res) {
 	request.get({
@@ -74,7 +76,7 @@ function responder (id, setInProcess){
                 },
             url: serverURL + 'responder'
         });
-    }, TIEMPO_ESCRITURA);
+    }, 6000);
 }
 
 function buscarPreguntas(){
@@ -106,11 +108,12 @@ function startReplying() {
     }, TIEMPO_RESPUESTA);
 }
 
-function subscribe(docente, cont) {
+function subscribe(docente) {
     request.post({
         json: true,
         body: docente,
         url: serverURL + 'subscribe'
     });
-    cont();
+
+    return Q();
 }

@@ -1,7 +1,8 @@
-var express = require('express'),
-    request = require('request'),
-    _ = require('underscore'),
-    app = express();
+var express = require('../node_modules/express'),
+    request = require('../node_modules/request'),
+    _ = require('../node_modules/underscore'),
+    app = express(),
+    Q = require('../node_modules/q');
 
 var foroUrl = 'http://localhost:3000/';
 var TIEMPO_PREGUNTA = 2000;
