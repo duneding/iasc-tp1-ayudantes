@@ -5,6 +5,7 @@ var express = require('express'),
 
 var serverURL = 'http://localhost:3000/';
 var TIEMPO_RESPUESTA = 10000;
+var TIEMPO_ESCRITURA = 6000;
 
 app.use(require('body-parser').json());
 
@@ -73,7 +74,7 @@ function responder (id, setInProcess){
                 },
             url: serverURL + 'responder'
         });
-    }, 6000);
+    }, TIEMPO_ESCRITURA);
 }
 
 function buscarPreguntas(){
