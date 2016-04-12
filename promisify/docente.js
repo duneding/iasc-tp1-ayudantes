@@ -146,9 +146,6 @@ function startReplying() {
                 if (id>=0)
                   setInProcess(id)
                     .all([broadcast(escribiendo(id)), responder(id)])        
-                    /*.then(escribiendo)
-                    .then(broadcast)
-                    .then(responder)*/
                     .fail(function(error){
                         console.log(error);
                     });
