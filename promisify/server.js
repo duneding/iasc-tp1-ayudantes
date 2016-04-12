@@ -95,18 +95,19 @@ app.post('/broadcast', function (req, res) {
 });
 
 app.post('/process/:id', function (req, res) {
-    console.log("<SERVER> Pregunta en proceso: " + req.params.id);
+    console.log("<SERVER> Pregunta seteada en proceso: " + req.params.id);
     preguntasInProcess.push(req.params.id);
     res.sendStatus(200);
 });
 
-app.get('/process/:id', function (req, res) {  
+app.get('/process/:id', function (req, res) { 
+ 
     var pregunta = _.find(preguntasInProcess, function(id){ return id == req.params.id; });
     if (!_.isUndefined(pregunta)){
-        console.log("<SERVER> Pregunta seteada en proceso: " + req.params.id);
-        res.status(200);
+        console.log("<SERVER> Pregunta en proceso: " + req.params.id);
+        res.sendStatus(200);
     }else
-        res.status(400);
+        res.sendStatus(400);
 });
 
 app.get('/participantes', function (req, res) {

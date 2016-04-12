@@ -34,60 +34,97 @@ app.post('/broadcast', function (req, res) {
     res.sendStatus(200);
 });
 
-function broadcast(id, action){
-    request.post({
-        json: true,
-        body: action(id),
-        url: serverURL + 'broadcast'
-    });
-}
-
-function setInProcess(id){
+function broadcast(mensaje){
+    var deferred = Q.defer();
     request({
-        url:  serverURL + 'process/' + id,
+        json: true,
+        body: mensaje,
+        url: serverURL + 'broadcast',
         method: 'POST'
     }, function(error, response, body){
         if(error)
-            console.log(error);
-        broadcast(id, escribiendo);        
-    });    
+            deferred.reject(error);
+        else
+            deferred.resolve(); 
+    });
+
+    return deferred.promise;       
 }
 
-function getInProcess(id){
+function setInProcess(id){
+    var deferred = Q.defer();
+    request({
+        url:  serverURL + 'process/' + id,
+        method: 'POST'
+    }, function(error, response, body){        
+        if(error)
+            deferred.reject(error);
+        else
+            deferred.resolve(id); 
+    }); 
+
+    return deferred.promise;       
+}
+
+function alreadyInProcess(id){
+    var deferred = Q.defer();
+
     request(serverURL + 'process/' + id, function (error, response, body) {
       if (!error && response.statusCode == 200)
-        return true;
-      else
-        return false;
+        deferred.resolve(-1);
+      else if(!error && response.statusCode == 400)
+        deferred.resolve(id);
+      else if(error)
+        deferred.reject(error);      
     });
+    return deferred.promise;
 }
 
-function responder (id, setInProcess){
-
-    setInProcess(id);
+function responder (id){
+    var deferred = Q.defer();
     
     setTimeout(function(){
-        request.post({
+        request({
             json: true,
+            method: 'POST',
             body: { 
                     id: id, 
                     respuesta: "everythings gonna be alright", 
                     docente: getPort()
                 },
             url: serverURL + 'responder'
+        }, function(error, response, body){
+            if(error)
+                deferred.reject(error);
+            else
+                deferred.resolve(id); 
         });
     }, 6000);
+
+    return deferred.promise;
 }
 
 function buscarPreguntas(){
+    var deferred = Q.defer();
+
     request(serverURL+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {pending: true});
-            if (!_.isUndefined(pregunta))    
-                if (!getInProcess(pregunta.id))
-                    responder(pregunta.id, setInProcess);                      
-          }
-        });
+            if (!_.isUndefined(pregunta))
+                alreadyInProcess(pregunta.id)
+                    .then(function(res){
+                        deferred.resolve(res);
+                    })
+                    .fail(function(error){
+                        deferred.reject(error)    
+                    });            
+            else
+                deferred.reject('no question yet!');
+            
+        }
+    });
+
+    return deferred.promise;
 }
 
 function escribiendo(id){
@@ -104,7 +141,21 @@ function getPort(){
 function startReplying() {
 	console.log('Docente: Start Replying');
     setInterval(function () {
-        buscarPreguntas(responder);
+        buscarPreguntas()
+            .then(function(id){
+                if (id>=0)
+                  setInProcess(id)
+                    .all([broadcast(escribiendo(id)), responder(id)])        
+                    /*.then(escribiendo)
+                    .then(broadcast)
+                    .then(responder)*/
+                    .fail(function(error){
+                        console.log(error);
+                    });
+            })
+            .fail(function(error){
+                console.log(error);
+            });
     }, TIEMPO_RESPUESTA);
 }
 
