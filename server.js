@@ -103,10 +103,8 @@ app.get('/process/:id', function (req, res) {
     var pregunta = _.find(preguntasInProcess, function(id){ return id == req.params.id; });
     if (!_.isUndefined(pregunta)){
         res.sendStatus(200);
-        console.log("<SERVER> Pregunta en proceso: " + req.params.id);
     } else {
         res.sendStatus(400);
-		console.log("<SERVER> Pregunta no está en proceso: " + req.params.id);
 	}
 });
 

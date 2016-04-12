@@ -59,7 +59,7 @@ function setInProcess(id){
     });    
 }
 
-function getInProcess(id){
+function getInProcess(id, cont){
 	request.get(serverURL + 'process/' + id)
 	  .on('error', function (error) {
 	  	console.error('No se pudo consultar si la pregunta: ' + id + ' estaba en proceso de responderse - Error: ' + error);
@@ -68,13 +68,13 @@ function getInProcess(id){
 		if (response.statusCode == 200) {
 			console.log('La pregunta: ' + id + ' está en proceso de responderse');
 		} else {
-			responder(id, setInProcess);                      
+			cont(id, setInProcess);                      
 		}
       });
 }
 
-function responder (id, setInProcess){
-    setInProcess(id);
+function responder(id, cont){
+    cont(id);
     
     setTimeout(function(){
         request.post({
@@ -95,12 +95,12 @@ function responder (id, setInProcess){
     }, TIEMPO_ESCRITURA);
 }
 
-function buscarPreguntas(){
+function buscarPreguntas(cont){
     request(serverURL+'preguntas', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var pregunta = _.findWhere(JSON.parse(body), {pending: true});
             if (!_.isUndefined(pregunta)) {
-                getInProcess(pregunta.id);
+                getInProcess(pregunta.id, cont);
 			}
 	  	} else if (error) {
 			console.error('Falló al obtener las preguntas: ' + error);
