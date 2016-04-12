@@ -17,15 +17,19 @@ var server = app.listen(process.argv[2], function () {
   subscribe({
 	id: getPort(),
 	alumno: true
-  }, startAsking);
+  }).then(startAsking)
+  	.fail(defaultError);
 });
-
 
 app.get('/', function (req, res) {
 	request.get({
 		json: true,
 		url: foroUrl + 'preguntas'
-    }).pipe(res);
+    }, function(error){
+		if (error) {
+			defaultError('No se pudo obtener la lista de preguntas - Error: ' + error);
+		} 
+	}).pipe(res);
 });
 
 app.post('/broadcast', function (req, res) {
@@ -34,11 +38,19 @@ app.post('/broadcast', function (req, res) {
 });
 
 function preguntar(pregunta) {
+	var deferred = Q.defer();
     request.post({
         json: true,
         body: pregunta,
         url: foroUrl + 'preguntar'
-    });
+    }, function(error, response, body) {
+		if(error) {
+			deferred.reject('<ALUMNO> No pudo preguntar: ' + error);
+		} else {
+			deferred.resolve(response);			
+		}
+	});
+	return deferred.promise;
 }
 
 function getPort(){
@@ -50,16 +62,30 @@ function startAsking() {
         preguntar({
             alumno: getPort(),
             pregunta: 'whats going on?'
-        });
+        })
+		.fail(defaultError);
     }, TIEMPO_PREGUNTA);
     
 }
 
-function subscribe(alumno, cont) {
+function subscribe(alumno) {
+	var deferred = Q.defer();
+	
     request.post({
         json: true,
         body:  alumno,
         url: foroUrl + 'subscribe'
-    });
-    cont();
+    }, function(error, response, body) {
+		if(error) {
+			deferred.reject(error);
+		} else {
+			deferred.resolve(response);			
+		}
+	});
+	
+	return deferred.promise;
+}
+
+function defaultError(error){
+  console.error(error);
 }

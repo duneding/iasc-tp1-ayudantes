@@ -8,7 +8,7 @@ var gutil   = require('gulp-util');
 */
 
 var paths = {
-  js: ['./*.js']
+  js: ['./*.js', 'promisify/*.js']
 };
 
 gulp.task('default', ['lint']); //, 'minify', 'sass', 'images'

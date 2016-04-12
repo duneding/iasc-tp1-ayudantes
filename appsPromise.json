@@ -1,0 +1,21 @@
+[{
+  "script"    : "server.js",
+  "name"      : "Foro Server",
+  "watch"     : false,
+  "merge_logs": true,
+  "out_file"  : "log/server.log"
+}, {
+  "script"    : "promisify/alumno.js",
+  "name"      : "Alumno",
+  "watch"     : false,
+  "merge_logs": true,
+  "out_file"  : "log/alumno.log",
+  "args"	  : "3001"
+}, {
+  "script"    : "docente.js",
+  "name"      : "Docente",
+  "watch"     : false,
+  "merge_logs": true,
+  "out_file"  : "log/docente.log",
+  "args"	  : "3010"
+}]
