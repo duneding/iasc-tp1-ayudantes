@@ -5,7 +5,8 @@ var express = require('../node_modules/express'),
     Q = require('../node_modules/q');
 
 var serverURL = 'http://localhost:3000/';
-var TIEMPO_RESPUESTA = 10000;
+var TIEMPO_RESPUESTA = 1000;
+var answering = false;
 
 app.use(require('body-parser').json());
 
@@ -30,7 +31,7 @@ app.get('/', function (req, res) {
 });
 
 app.post('/broadcast', function (req, res) {
-    console.log("<DOCENTE> " + req.body.mensaje);
+    console.log("<DOCENTE> " +req.body.text);
     res.sendStatus(200);
 });
 
@@ -96,8 +97,10 @@ function responder (id){
         }, function(error, response, body){
             if(error)
                 deferred.reject(error);
-            else
-                deferred.resolve(id); 
+            else{
+                deferred.resolve(response); 
+                answering = false;
+            }
         });
     }, 6000);
 
@@ -129,7 +132,7 @@ function buscarPreguntas(){
 
 function escribiendo(id){
     return {
-            mensaje: "Docente " + getPort() + " esta escribiendo respuesta a pregunta " + id,
+            text: "Docente " + getPort() + " esta escribiendo respuesta a pregunta " + id,
             id: getPort()
            };
 }
@@ -141,27 +144,42 @@ function getPort(){
 function startReplying() {
 	console.log('Docente: Start Replying');
     setInterval(function () {
-        buscarPreguntas()
-            .then(function(id){
-                if (id>=0)
-                  setInProcess(id)
-                    .all([broadcast(escribiendo(id)), responder(id)])        
-                    .fail(function(error){
-                        console.log(error);
-                    });
-            })
-            .fail(function(error){
-                console.log(error);
-            });
+        if(!answering) 
+            buscarPreguntas()
+                .then(function(id){
+                    if (id>=0){
+                        answering=true;
+                        setInProcess(id)
+                            .all([broadcast(escribiendo(id)), responder(id)])                                  
+                            .fail(function(error){
+                                console.log(error);
+                            });
+                    }
+                })
+                .fail(function(error){
+                    console.log(error);
+                });
+        else
+            console.log("Sos humano no podes responder otra!!!");    
+
     }, TIEMPO_RESPUESTA);
 }
 
 function subscribe(docente) {
-    request.post({
+    var deferred = Q.defer();
+
+    request({
         json: true,
         body: docente,
-        url: serverURL + 'subscribe'
+        url: serverURL + 'subscribe',
+        method: 'POST'
+    }, function(error, response, body){
+        if (error)
+            deferred.reject(error);
+        else
+            deferred.resolve();
+
     });
 
-    return Q();
+    return deferred.promise;
 }
